@@ -54,9 +54,7 @@ CharString::CharString(const char* other)
 {
     _size = get_string_size(other);
     _data = (char*)realloc(_data, _size);
-
-    for (auto i = 0u; i < _size; i++)
-        _data[i] = other[i];
+    memcpy(_data, other, _size);
 }
 
 unsigned int CharString::get_string_size(const char* other) const
@@ -98,30 +96,20 @@ bool CharString::operator!=(const CharString& other) const
 CharString& CharString::operator+=(const CharString& other)
 {
     _data = (char*) realloc(_data, _size + other._size);
-    for (auto i = 0u; i < other._size; i++)
-        _data[_size + i] = other._data[i];
-    
+    memcpy(_data + _size, other._data, other._size);
     _size += other._size;
     return *this;
 }
 
 void CharString::write(unsigned short address, const char* data, unsigned long size)
 {
-    auto* out = _data + address;
-    auto* in = data;
-    for (auto i = 0u; i < size; i++)
-        *out++ = *in++;
+    memcpy(_data + address, data, size);
 }
 
 CharString CharString::read(unsigned short address, unsigned long tsize) const
 {
     auto result = CharString(static_cast<unsigned int>(tsize));
-    auto* out = result._data;
-    auto* in = _data + address;
-
-    for (auto i = 0u; i < tsize; i++)
-        *out++ = *in++;
-
+    memcpy(result._data, _data + address, tsize);
     return result;
 }
 
