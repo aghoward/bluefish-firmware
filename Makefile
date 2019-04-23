@@ -73,6 +73,16 @@ VERSION ?=	1.0
 # Arduino model. E.g. atmega328, mega2560, uno.
 # Valid model names can be found in $(ARDUINO_DIR)/hardware/arduino/avr/boards.txt
 # This must be set to a valid model name.
+ifndef LEONARDO
+ifndef NANO
+ifndef UNO
+ifndef MIGHTY1284P
+MIGHTY1284P=true
+endif
+endif
+endif
+endif
+#
 ifdef LEONARDO
 ARDUINO_MODEL ?=leonardo
 VARIANT =leonardo
