@@ -31,6 +31,7 @@ class FileSystem
         void sync_usage_record();
 
         unsigned int request_free_inode();
+        void free_inode(unsigned int address);
         void set_file_header(unsigned int address);
 
         either<unsigned int, FileSystemError> get_next_file_header(unsigned int starting_address) const;
@@ -40,6 +41,7 @@ class FileSystem
         File read_address_to_file(unsigned int address);
         CharString read_file_to_string(unsigned int address);
         INode<CharString> read_file_inode(unsigned int address);
+        INode<void> read_inode_header(unsigned int address);
 
         CharString write_file_to_string(const File& file) const;
         void write_inode(
@@ -68,6 +70,7 @@ class FileSystem
 
         either<unsigned int, FileSystemError> write(const File& file);
         either<File, FileSystemError> read(const CharString& filename);
+        either<unsigned int, FileSystemError> remove(const CharString& filename);
 
         vector<CharString> list_files();
 };

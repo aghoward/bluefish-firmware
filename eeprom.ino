@@ -87,6 +87,23 @@ void list_files()
     }
 }
 
+void remove_file()
+{
+    fs->remove(prompt_user("Filename: "))
+        .match(
+            [] (auto&&)
+            {
+                Serial.println("File removed successfully!");
+                Serial.flush();
+            },
+            [] (auto&& error)
+            {
+                Serial.print("Error: ");
+                Serial.println(static_cast<unsigned>(error));
+                Serial.flush();
+            });
+}
+
 void setup()
 {
     Wire.begin();
@@ -118,6 +135,8 @@ void loop()
         fs->print_usage();
     else if (command.equals("list"))
         list_files();
+    else if (command.equals("remove_file"))
+        remove_file();
     else
     {
         Serial.print("Error: Unrecognized command: ");

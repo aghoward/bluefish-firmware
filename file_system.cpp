@@ -12,6 +12,18 @@
 #include "size.h"
 #include "vector.h"
 
+
+unsigned int inode_to_address(unsigned int inode_number)
+{
+    return inode_number * INODE_SIZE;
+}
+
+unsigned int address_to_inode(unsigned int address)
+{
+    return address / INODE_SIZE;
+}
+
+
 size_t FileSystem::count_free_space() const
 {
     auto free_inodes = 0u;
@@ -160,6 +172,36 @@ INode<CharString> FileSystem::read_file_inode(unsigned int address)
 }
 
 
+INode<void> FileSystem::read_inode_header(unsigned int address)
+{
+    _istream.seekg(address);
+    auto data = INode<void>();
+    _istream >> data;
+    return data;
+}
+
+either<unsigned int, FileSystemError> FileSystem::remove(const CharString& filename)
+{
+    return get_address_of_file(filename)
+        .mapFirst([&] (auto&& address)
+        {
+            auto data = read_inode_header(address);
+            auto next_address = data.next;
+            free_inode(address);
+
+            while (next_address != 0)
+            {
+                data = read_inode_header(next_address);
+                free_inode(next_address);
+                next_address = data.next;
+            }
+
+            write_master_block();
+
+            return address;
+        });
+}
+
 vector<CharString> FileSystem::list_files()
 {
     auto file_count = static_cast<unsigned int>(count_files());
@@ -219,6 +261,14 @@ unsigned int FileSystem::request_free_inode()
     return -1;
 }
 
+void FileSystem::free_inode(unsigned int address)
+{
+    auto inode_number = address_to_inode(address);
+    if ((_master_block.usage_record >> inode_number) & 0x1)
+        _master_block.usage_record ^= (0x1 << inode_number);
+    if ((_master_block.file_headers >> inode_number) & 0x1)
+        _master_block.file_headers ^= (0x1 << inode_number);
+}
 
 void FileSystem::set_file_header(unsigned int address)
 {

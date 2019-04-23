@@ -59,3 +59,5 @@ istream& operator>>(istream& stream, INode<T>& inode)
     stream >> inode.next >> inode.length >> inode.data;
     return stream;
 }
+
+istream& operator>>(istream& stream, INode<void>& inode);
