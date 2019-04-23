@@ -9,16 +9,19 @@
 
 std::unique_ptr<FileSystem> fs;
 
+CharString prompt_user(const char* prompt)
+{
+    Serial.print(prompt);
+    while (!Serial.available()) {}
+    auto result = Serial.readStringUntil('\n');
+    result.trim();
+    return CharString(result.c_str());
+}
+
 void write_file()
 {
-    Serial.print("Filename: ");
-    while (!Serial.available()) {}
-    
-    auto filename = Serial.readStringUntil('\n');
-    filename.trim();
-
     auto file = File(
-        filename.c_str(),
+        prompt_user("Filename: "),
         "foo bar",
         "baz quz qux some more random non sensical words to fill up space so this bleeds over");
     auto result = fs->write(file);
@@ -39,12 +42,7 @@ void write_file()
 
 void read_file()
 {
-    Serial.print("Filename: ");
-    while (!Serial.available()) {}
-    auto filename = Serial.readStringUntil('\n');
-    filename.trim();
-
-    auto result = fs->read(filename.c_str());
+    auto result = fs->read(prompt_user("Filename: "));
     result.match(
         [] (auto&& file) {
             Serial.print("Filename @0x");
