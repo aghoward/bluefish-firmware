@@ -254,7 +254,7 @@ unsigned int FileSystem::request_free_inode()
         if (!((_master_block.usage_record >> i) & 0x1))
         {
             _master_block.usage_record |= (0x1 << i);
-            return i * INODE_SIZE;
+            return inode_to_address(i);
         }
     }
 
@@ -272,16 +272,16 @@ void FileSystem::free_inode(unsigned int address)
 
 void FileSystem::set_file_header(unsigned int address)
 {
-    auto inode_number = address / INODE_SIZE;
+    auto inode_number = address_to_inode(address);
     _master_block.file_headers |= (0x1 << inode_number);
 }
 
 either<unsigned int, FileSystemError> FileSystem::get_next_file_header(unsigned int starting_address) const
 {
-    for (auto starting_inode = starting_address / INODE_SIZE; starting_inode < sizeof(_master_block.file_headers)*8; starting_inode++)
+    for (auto starting_inode = address_to_inode(starting_address); starting_inode < sizeof(_master_block.file_headers)*8; starting_inode++)
     {
         if ((_master_block.file_headers >> starting_inode) & 0x1)
-            return starting_inode * INODE_SIZE;
+            return inode_to_address(starting_inode);
     }
 
     return FileSystemError::FileNotFound;
