@@ -23,6 +23,11 @@ CharString::CharString(unsigned int tsize)
     _size = tsize;
 }
 
+CharString::CharString(unsigned long tsize)
+    : CharString(static_cast<unsigned int>(tsize))
+{
+}
+
 CharString::~CharString()
 {
     free(_data);

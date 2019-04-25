@@ -17,6 +17,7 @@ class CharString : public IWriteable, public IReadable
     public:
         CharString();
         explicit CharString(unsigned int tsize);
+        explicit CharString(unsigned long tsize);
         CharString(const CharString&) = delete;
         CharString(CharString&& other);
 
