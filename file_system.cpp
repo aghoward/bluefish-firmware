@@ -43,14 +43,9 @@ size_t FileSystem::count_files() const
     return file_count;
 }
 
-void FileSystem::print_usage()
+const FSMasterBlock& FileSystem::get_usage() const
 {
-    Serial.print("File System: ");
-    Serial.print("usage record: ");
-    Serial.print(_master_block.usage_record);
-    Serial.print(" file_headers: ");
-    Serial.println(_master_block.file_headers);
-    Serial.flush();
+    return _master_block;
 }
 
 void FileSystem::format()

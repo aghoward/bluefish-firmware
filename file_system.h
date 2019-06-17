@@ -66,7 +66,7 @@ class FileSystem
         size_t count_free_space() const;
         size_t count_files() const;
         void format();
-        void print_usage();
+        const FSMasterBlock& get_usage() const;
 
         either<unsigned int, FileSystemError> write(const File& file);
         either<File, FileSystemError> read(const CharString& filename);
