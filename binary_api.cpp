@@ -13,6 +13,7 @@ CommandStatus BinaryAPI::convert_error(FileSystemError error) const
 
 Command BinaryAPI::read_command()
 {
+    _output.put(static_cast<byte>(CommandStatus::Ready));
     auto command = static_cast<byte>(_input.get());
     return static_cast<Command>(command);
 }
@@ -75,4 +76,5 @@ void BinaryAPI::remove_file()
 void BinaryAPI::format()
 {
     _fs->format();
+    _output.put(static_cast<byte>(CommandStatus::OK));
 }

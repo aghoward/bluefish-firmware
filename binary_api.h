@@ -12,7 +12,8 @@ enum class CommandStatus : byte
     OK = 0u,
     Fail,
     NotEnoughDiskSpace,
-    FileNotFound
+    FileNotFound,
+    Ready
 };
 
 class BinaryAPI : public API
@@ -24,13 +25,13 @@ class BinaryAPI : public API
         ostream _output;
 
     protected:
-        void unknown_command();
-        void write_file();
-        void read_file();
-        void print_usage();
-        void list_files();
-        void remove_file();
-        void format();
+        void unknown_command() override;
+        void write_file() override;
+        void read_file() override;
+        void print_usage() override;
+        void list_files() override;
+        void remove_file() override;
+        void format() override;
 
         CommandStatus convert_error(FileSystemError error) const;
 
@@ -42,5 +43,5 @@ class BinaryAPI : public API
             _output(&_stream)
         {}
 
-        Command read_command();
+        Command read_command() override;
 };
