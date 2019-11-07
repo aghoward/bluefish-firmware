@@ -58,6 +58,8 @@ class ostream : public ios_base<IWriteable>
             write(data, sizeof(T));
             return *this;
         }
+
+        ostream& operator<<(uint8_t c);
 };
 
 class istream : public ios_base<IReadable>
@@ -81,4 +83,6 @@ class istream : public ios_base<IReadable>
 
             return *this;
         }
+
+        istream& operator>>(uint8_t& c);
 };

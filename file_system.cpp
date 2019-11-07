@@ -23,24 +23,15 @@ unsigned int address_to_inode(unsigned int address)
     return address / INODE_SIZE;
 }
 
-
-size_t FileSystem::count_free_space() const
+size_t FileSystem::count_free_space()
 {
-    auto free_inodes = 0u;
-    for (auto i = 0u; i < sizeof(_master_block.usage_record)*8; i++)
-        if (!((_master_block.usage_record >> i) & 0x1))
-            free_inodes++;
-
+    auto free_inodes = _master_block.free_inodes;
     return free_inodes * usable_inode_space;
 }
 
-size_t FileSystem::count_files() const
+size_t FileSystem::count_files()
 {
-    auto file_count = 0u;
-    for (auto i = 0u; i < sizeof(_master_block.file_headers)*8; i++)
-        if ((_master_block.file_headers >> i) &0x1)
-            file_count++;
-    return file_count;
+    return _master_block.file_headers;
 }
 
 const FSMasterBlock& FileSystem::get_usage() const
@@ -50,7 +41,11 @@ const FSMasterBlock& FileSystem::get_usage() const
 
 void FileSystem::format()
 {
-    _master_block = FSMasterBlock();
+    auto total_inodes = _eeprom->size / INODE_SIZE;
+    for (auto index = 1u; index < total_inodes; index++)
+        free_inode(inode_to_address(index));
+
+    _master_block = FSMasterBlock(total_inodes - 1, 0u);
     write_master_block();
     delay(50);
     sync_usage_record();
@@ -79,8 +74,6 @@ either<unsigned int, FileSystemError> FileSystem::write(const File& file)
 
     auto to_write = write_file_to_string(file);
     auto inode_address = request_free_inode();
-
-    set_file_header(inode_address);
 
     auto max_size = ::size(to_write);
     for (auto i = 0u; i < max_size;)
@@ -120,12 +113,18 @@ void FileSystem::write_inode(
     _ostream.seekg(inode_address);
 
     auto data_to_write = to_write.read(start_index, bytes_to_write);
+    bool is_file_header = start_index == 0u;
 
     auto inode_to_write = INode<CharString>(
         next_address,
         bytes_to_write,
+        is_file_header,
         std::move(data_to_write));
+
     _ostream << inode_to_write;
+
+    if (is_file_header)
+        _master_block.file_headers++;
 }
 
 either<File, FileSystemError> FileSystem::read(const CharString& filename)
@@ -231,25 +230,29 @@ either<unsigned int, FileSystemError> FileSystem::get_address_of_file(const Char
 
 CharString FileSystem::get_filename_at_address(unsigned int address)
 {
-    unsigned int next_inode = 0u;
-    unsigned int inode_length = 0u;
+    auto inode_header = INode<void>();
     unsigned int charstring_length = 0u;
     auto filename = CharString();
 
     _istream.seekg(address);
-    _istream >> next_inode >> inode_length >> charstring_length >> filename;
+    _istream >> inode_header >> charstring_length >> filename;
 
     return filename;
 }
 
 unsigned int FileSystem::request_free_inode()
 {
-    for (auto i = 1u; i < sizeof(_master_block.usage_record)*8; i++)
+    auto inode_count = _eeprom->size / INODE_SIZE;
+    for (auto index = 0u; index < inode_count; index++)
     {
-        if (!((_master_block.usage_record >> i) & 0x1))
-        {
-            _master_block.usage_record |= (0x1 << i);
-            return inode_to_address(i);
+        auto address = inode_to_address(index);
+        auto inode = read_inode_header(address);
+        if (!inode.flags.in_use) {
+            inode.flags.in_use = 1u;
+            _ostream.seekg(address);
+            _ostream << inode;
+            _master_block.free_inodes--;
+            return address;
         }
     }
 
@@ -258,25 +261,28 @@ unsigned int FileSystem::request_free_inode()
 
 void FileSystem::free_inode(unsigned int address)
 {
-    auto inode_number = address_to_inode(address);
-    if ((_master_block.usage_record >> inode_number) & 0x1)
-        _master_block.usage_record ^= (0x1 << inode_number);
-    if ((_master_block.file_headers >> inode_number) & 0x1)
-        _master_block.file_headers ^= (0x1 << inode_number);
+    auto header = read_inode_header(address);
+
+    _ostream.seekg(address);
+    _ostream << INode<void>();
+
+    _master_block.free_inodes++;
+    if (header.flags.is_file_header)
+        _master_block.file_headers--;
 }
 
-void FileSystem::set_file_header(unsigned int address)
+either<unsigned int, FileSystemError> FileSystem::get_next_file_header(unsigned int starting_address)
 {
-    auto inode_number = address_to_inode(address);
-    _master_block.file_headers |= (0x1 << inode_number);
-}
+    if (_master_block.file_headers == 0u)
+        return FileSystemError::FileNotFound;
 
-either<unsigned int, FileSystemError> FileSystem::get_next_file_header(unsigned int starting_address) const
-{
-    for (auto starting_inode = address_to_inode(starting_address); starting_inode < sizeof(_master_block.file_headers)*8; starting_inode++)
+    auto inode_count = _eeprom->size / INODE_SIZE;
+    for (auto index = address_to_inode(starting_address); index < inode_count; index++)
     {
-        if ((_master_block.file_headers >> starting_inode) & 0x1)
-            return inode_to_address(starting_inode);
+        auto address = inode_to_address(index);
+        auto header = read_inode_header(address);
+        if (header.flags.is_file_header)
+            return address;
     }
 
     return FileSystemError::FileNotFound;

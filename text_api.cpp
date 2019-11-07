@@ -109,8 +109,8 @@ void TextAPI::print_usage()
 {
     const auto& master_block = _fs->get_usage();
 
-    Serial.print("usage: ");
-    Serial.println(master_block.usage_record);
+    Serial.print("free_inodes: ");
+    Serial.println(master_block.free_inodes);
     Serial.print("file usage: ");
     Serial.println(master_block.file_headers);
     Serial.flush();

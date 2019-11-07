@@ -15,6 +15,13 @@ ostream& ostream::write(const char* s, size_t count)
     return *this;
 }
 
+
+ostream& ostream::operator<<(uint8_t c)
+{
+    put(static_cast<char>(c));
+    return *this;
+}
+
 char istream::get()
 {
     auto data = peek();
@@ -37,5 +44,11 @@ istream& istream::read(char* out, ios_base::ios_size_t count)
     for (auto i = 0u; i < count; i++)
         *out++ = *ptr++;
 
+    return *this;
+}
+
+istream& istream::operator>>(uint8_t& c)
+{
+    c = static_cast<uint8_t>(get());
     return *this;
 }

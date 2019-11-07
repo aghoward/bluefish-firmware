@@ -27,14 +27,13 @@ class FileSystem
 
         FSMasterBlock _master_block;
 
-//        void write_master_block();
         void sync_usage_record();
 
         unsigned int request_free_inode();
         void free_inode(unsigned int address);
         void set_file_header(unsigned int address);
 
-        either<unsigned int, FileSystemError> get_next_file_header(unsigned int starting_address) const;
+        either<unsigned int, FileSystemError> get_next_file_header(unsigned int starting_address);
         either<unsigned int, FileSystemError> get_address_of_file(const CharString& filename, unsigned int start_address = 0u);
         CharString get_filename_at_address(unsigned int address);
 
@@ -63,8 +62,8 @@ class FileSystem
         }
 
         void write_master_block();
-        size_t count_free_space() const;
-        size_t count_files() const;
+        size_t count_free_space();
+        size_t count_files();
         void format();
         const FSMasterBlock& get_usage() const;
 

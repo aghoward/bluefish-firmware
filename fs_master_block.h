@@ -5,19 +5,21 @@
 
 struct FSMasterBlock
 {
-    unsigned long usage_record;
-    unsigned long file_headers;
+    uint32_t free_inodes;
+    uint32_t file_headers;
+
+    FSMasterBlock(uint32_t free, uint32_t files)
+        : free_inodes(free), file_headers(files) {}
 
     FSMasterBlock()
-        : usage_record(1ul),
-        file_headers(0ul)
+        : FSMasterBlock(0u, 0u)
     {}
     FSMasterBlock(const FSMasterBlock&) = default;
     FSMasterBlock(FSMasterBlock&&) = default;
     FSMasterBlock& operator=(const FSMasterBlock&) = default;
     FSMasterBlock& operator=(FSMasterBlock&&) = default;
 
-    unsigned int size() const;
+    uint16_t size() const;
 };
 
 ostream& operator<<(ostream& stream, const FSMasterBlock& block);
