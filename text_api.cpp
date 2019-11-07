@@ -14,8 +14,8 @@ Command TextAPI::read_command()
         return Command::WriteFile;
     else if (command.equals("read_file"))
         return Command::ReadFile;
-    else if (command.equals("print_usage"))
-        return Command::PrintUsage;
+    else if (command.equals("get_master_block"))
+        return Command::GetMasterBlock;
     else if (command.equals("list"))
         return Command::ListFiles;
     else if (command.equals("remove_file"))
@@ -105,9 +105,9 @@ void TextAPI::list_files()
     }
 }
 
-void TextAPI::print_usage()
+void TextAPI::get_master_block()
 {
-    const auto& master_block = _fs->get_usage();
+    const auto& master_block = _fs->get_master_block();
 
     Serial.print("free_inodes: ");
     Serial.println(master_block.free_inodes);
@@ -135,5 +135,6 @@ void TextAPI::remove_file()
 
 void TextAPI::format()
 {
-    _fs->format();
+    // Not implemented
+    //_fs->format();
 }

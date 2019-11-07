@@ -18,10 +18,10 @@ class CharString : public IWriteable, public IReadable
         CharString();
         explicit CharString(unsigned int tsize);
         explicit CharString(unsigned long tsize);
-        CharString(const CharString&) = delete;
+        CharString(const CharString&);
         CharString(CharString&& other);
 
-        CharString& operator=(const CharString&) = delete;
+        CharString& operator=(const CharString& other);
         CharString& operator=(CharString&& other);
 
         CharString(const char* other);

@@ -7,7 +7,7 @@ enum class Command : byte
     Unknown = 0u,
     WriteFile,
     ReadFile,
-    PrintUsage,
+    GetMasterBlock,
     ListFiles,
     RemoveFile,
     Format
@@ -19,7 +19,7 @@ class API
         virtual void unknown_command() = 0;
         virtual void write_file() = 0;
         virtual void read_file() = 0;
-        virtual void print_usage() = 0;
+        virtual void get_master_block() = 0;
         virtual void list_files() = 0;
         virtual void remove_file() = 0;
         virtual void format() = 0;

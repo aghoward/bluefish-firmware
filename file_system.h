@@ -6,6 +6,7 @@
 #include <either.h>
 
 #include "24lc16b.h"
+#include "char_string.h"
 #include "file.h"
 #include "fs_master_block.h"
 #include "stream.h"
@@ -64,12 +65,11 @@ class FileSystem
         void write_master_block();
         size_t count_free_space();
         size_t count_files();
-        void format();
-        const FSMasterBlock& get_usage() const;
 
+        void format(const CharString& encryption_iv);
+        const FSMasterBlock& get_master_block() const;
         either<unsigned int, FileSystemError> write(const File& file);
         either<File, FileSystemError> read(const CharString& filename);
         either<unsigned int, FileSystemError> remove(const CharString& filename);
-
         vector<CharString> list_files();
 };

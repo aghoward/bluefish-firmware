@@ -33,12 +33,42 @@ CharString::~CharString()
     free(_data);
 }
 
+
+CharString::CharString(const CharString& other)
+{
+    _size = other._size;
+
+    if (_size == 0u)
+    {
+        _data = nullptr;
+        return;
+    }
+
+    _data = (char*)malloc(_size);
+    memcpy(_data, other._data, _size);
+}
+
 CharString::CharString(CharString&& other)
 {
     _data = other._data;
     _size = other._size;
     other._data = nullptr;
     other._size = 0u;
+}
+
+CharString& CharString::operator=(const CharString& other)
+{
+    if (other._size == 0u)
+    {
+        if (_size != 0u)
+            free(_data);
+        return *this;
+    }
+
+    _data = (char*)realloc(_data, other._size);
+    _size = other._size;
+    memcpy(_data, other._data, _size);
+    return *this;
 }
 
 CharString& CharString::operator=(CharString&& other)

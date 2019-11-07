@@ -1,5 +1,7 @@
 #include "binary_api.h"
 
+#include <utility.h>
+
 #include "stream.h"
 
 CommandStatus BinaryAPI::convert_error(FileSystemError error) const
@@ -48,9 +50,9 @@ void BinaryAPI::read_file()
         );
 }
 
-void BinaryAPI::print_usage()
+void BinaryAPI::get_master_block()
 {
-    const auto& master_block = _fs->get_usage();
+    const auto& master_block = _fs->get_master_block();
     _output << master_block;
 }
 
@@ -75,6 +77,8 @@ void BinaryAPI::remove_file()
 
 void BinaryAPI::format()
 {
-    _fs->format();
+    CharString encryption_iv;
+    _input >> encryption_iv;
+    _fs->format(std::move(encryption_iv));
     _output.put(static_cast<byte>(CommandStatus::OK));
 }

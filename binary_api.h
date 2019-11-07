@@ -29,7 +29,7 @@ class BinaryAPI : public API
         void unknown_command() override;
         void write_file() override;
         void read_file() override;
-        void print_usage() override;
+        void get_master_block() override;
         void list_files() override;
         void remove_file() override;
         void format() override;

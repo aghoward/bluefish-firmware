@@ -9,8 +9,8 @@ void API::process_command(Command cmd)
         this->write_file();
     else if (cmd == Command::ReadFile)
         this->read_file();
-    else if (cmd == Command::PrintUsage)
-        this->print_usage();
+    else if (cmd == Command::GetMasterBlock)
+        this->get_master_block();
     else if (cmd == Command::ListFiles)
         this->list_files();
     else if (cmd == Command::RemoveFile)
