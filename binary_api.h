@@ -6,6 +6,7 @@
 #include "file_system.h"
 #include "serial_stream.h"
 #include "stream.h"
+#include "24lc16b.h"
 
 enum class CommandStatus : byte
 {
@@ -20,7 +21,7 @@ class BinaryAPI : public API
 {
     private:
         std::unique_ptr<FileSystem> _fs;
-        SerialStream _stream;
+        SerialStream _sstream;
         istream _input;
         ostream _output;
 
@@ -38,10 +39,11 @@ class BinaryAPI : public API
     public:
         BinaryAPI()
             : _fs(std::make_unique<FileSystem>(std::make_unique<EEPROM>())),
-            _stream(),
-            _input(&_stream),
-            _output(&_stream)
-        {}
+            _sstream(),
+            _input(&_sstream),
+            _output(&_sstream)
+        {
+        }
 
         Command read_command() override;
 };
