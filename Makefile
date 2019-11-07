@@ -592,7 +592,7 @@ STRIP =		$(AVR_TOOLS_PATH)$(AVRPREFIX)strip
 NM =		$(AVR_TOOLS_PATH)$(AVRPREFIX)nm
 AVRDUDE =	$(AVR_TOOLS_PATH)avrdude
 #AVRDUDE =	$(ARDUINO_DIR)/hardware/tools/avrdude
-RM =		rm -f
+RM =		rm -Rf
 RMDIR = 	rmdir
 MV =		mv -f
 ifeq "$(OSNAME)" "Linux"
@@ -990,7 +990,7 @@ clean:
 	  $(ALLOBJ:%.o=%.i) \
 	  $(ALLOBJ:%.o=%.ii) \
 	  $(notdir $(ALLOBJ:%.o=%.s) $(ALLOBJ:%.o=%.i) $(ALLOBJ:%.o=%.ii))
-	-test ! -d $(OUTPUT) || $(RMDIR) $(OUTPUT)
+	-test ! -d $(OUTPUT) || $(RM) $(OUTPUT)
 
 
 ### Dependencies file and source path.
