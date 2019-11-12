@@ -2,8 +2,8 @@
 
 #include "api.h"
 #include "char_string.h"
+#include "eeprom.h"
 #include "file_system.h"
-#include "24lc16b.h"
 
 #include <memory.h>
 

@@ -45,7 +45,7 @@ void FileSystem::format(const CharString& encryption_iv)
     for (auto index = 1u; index < total_inodes; index++)
         free_inode(inode_to_address(index));
 
-    _master_block = FSMasterBlock(total_inodes - 1, 0u, encryption_iv);
+    _master_block = FSMasterBlock(total_inodes - 1u, 0u, encryption_iv);
     write_master_block();
     delay(50);
     sync_usage_record();

@@ -6,7 +6,7 @@
 #include "readable.h"
 #include "writeable.h"
 
-class EEPROM : public IReadable, public IWriteable
+class EEPROM_2kb : public IReadable, public IWriteable
 {
     private:
         const unsigned short i2c_address = 0x50;
@@ -22,7 +22,7 @@ class EEPROM : public IReadable, public IWriteable
     public:
         const size_t size = block_size * 8;
 
-        ~EEPROM() {}
+        ~EEPROM_2kb() {}
 
         void write(unsigned short address, const char* data, unsigned long size) override;
         CharString read(unsigned short address, unsigned long size) const override;

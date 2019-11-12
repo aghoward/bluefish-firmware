@@ -6,7 +6,7 @@
 #include "file_system.h"
 #include "serial_stream.h"
 #include "stream.h"
-#include "24lc16b.h"
+#include "eeprom.h"
 
 enum class CommandStatus : byte
 {

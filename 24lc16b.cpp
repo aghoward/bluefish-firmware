@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-void EEPROM::write(unsigned short address, const char* data, unsigned long size)
+void EEPROM_2kb::write(unsigned short address, const char* data, unsigned long size)
 {
     for (auto i = 0u; i < size;)
     {
@@ -18,7 +18,7 @@ void EEPROM::write(unsigned short address, const char* data, unsigned long size)
     }
 }
 
-CharString EEPROM::read(unsigned short address, unsigned long tsize) const
+CharString EEPROM_2kb::read(unsigned short address, unsigned long tsize) const
 {
     auto result = CharString(tsize);
     auto* out = result.data();
@@ -39,12 +39,12 @@ CharString EEPROM::read(unsigned short address, unsigned long tsize) const
     return result;
 }
 
-int EEPROM::getBlockAddress(unsigned short block) const
+int EEPROM_2kb::getBlockAddress(unsigned short block) const
 {
     return static_cast<int>(0x50 + (block & 0x7));
 }
 
-void EEPROM::writeBlock(unsigned short block, unsigned short address, const char* data, unsigned long size)
+void EEPROM_2kb::writeBlock(unsigned short block, unsigned short address, const char* data, unsigned long size)
 {
     for (auto i = 0u; i < size;) {
         auto page_address = address + i;
@@ -60,7 +60,7 @@ void EEPROM::writeBlock(unsigned short block, unsigned short address, const char
     }
 }
 
-void EEPROM::writePage(unsigned short block, unsigned short address, const char* data, unsigned long size)
+void EEPROM_2kb::writePage(unsigned short block, unsigned short address, const char* data, unsigned long size)
 {
     Wire.beginTransmission(getBlockAddress(block));
     Wire.write(static_cast<char>(address & 0xFF));
@@ -70,7 +70,7 @@ void EEPROM::writePage(unsigned short block, unsigned short address, const char*
     delay(30);
 }
 
-void EEPROM::readBlock(unsigned short block, unsigned short address, char* data, unsigned long size) const
+void EEPROM_2kb::readBlock(unsigned short block, unsigned short address, char* data, unsigned long size) const
 {
     for (auto i = 0u; i < size; i += page_size)
     {
@@ -80,7 +80,7 @@ void EEPROM::readBlock(unsigned short block, unsigned short address, char* data,
     }
 }
 
-void EEPROM::readPage(unsigned short block, unsigned short address, char* data, unsigned long size) const
+void EEPROM_2kb::readPage(unsigned short block, unsigned short address, char* data, unsigned long size) const
 {
     Wire.beginTransmission(getBlockAddress(block));
     Wire.write(static_cast<char>(address & 0xFF));

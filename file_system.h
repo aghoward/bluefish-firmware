@@ -5,8 +5,8 @@
 
 #include <either.h>
 
-#include "24lc16b.h"
 #include "char_string.h"
+#include "eeprom.h"
 #include "file.h"
 #include "fs_master_block.h"
 #include "stream.h"
