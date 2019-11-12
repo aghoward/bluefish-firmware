@@ -47,14 +47,11 @@ class ostream : public ios_base<IWriteable>
 
         ostream& put(char c);
         ostream& write(const char* s, size_t count);
-
         template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
         ostream& operator<<(T value)
         {
             char data[sizeof(T)];
-            for (auto i = 0u; i < sizeof(T); i++)
-                data[i] = (value >> (i*8)) & 0xFF;
-
+            memcpy(data, &value, sizeof(T));
             write(data, sizeof(T));
             return *this;
         }
