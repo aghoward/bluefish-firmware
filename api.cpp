@@ -17,4 +17,6 @@ void API::process_command(Command cmd)
         this->remove_file();
     else if (cmd == Command::Format)
         this->format();
+    else if (cmd == Command::GetFileName)
+        this->get_filename();
 }

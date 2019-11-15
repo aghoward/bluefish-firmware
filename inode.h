@@ -37,14 +37,11 @@ struct INode
         flags(1u, is_file_header ? 1u : 0u),
         data(std::move(d)) {}
 
-    INode(T&& d)
-        : INode(0u, ::size(d), false, std::move(d)) {}
-
-    INode(const T& d)
+    INode(uint16_t n, uint16_t l, bool is_file_header, const T& d)
         :
-        next(0u),
-        length(::size(d)),
-        flags(1u, 0u),
+        next(n),
+        length(l),
+        flags(1u, is_file_header ? 1u : 0u),
         data(d) {}
 
     INode()

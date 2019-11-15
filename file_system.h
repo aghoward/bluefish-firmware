@@ -9,6 +9,7 @@
 #include "eeprom.h"
 #include "file.h"
 #include "fs_master_block.h"
+#include "identifiers.h"
 #include "stream.h"
 #include "vector.h"
 
@@ -32,11 +33,8 @@ class FileSystem
 
         unsigned int request_free_inode();
         void free_inode(unsigned int address);
-        void set_file_header(unsigned int address);
 
-        either<unsigned int, FileSystemError> get_next_file_header(unsigned int starting_address);
-        either<unsigned int, FileSystemError> get_address_of_file(const CharString& filename, unsigned int start_address = 0u);
-        CharString get_filename_at_address(unsigned int address);
+        either<FileId, FileSystemError> get_next_file_header(unsigned int starting_address);
 
         File read_address_to_file(unsigned int address);
         CharString read_file_to_string(unsigned int address);
@@ -68,8 +66,9 @@ class FileSystem
 
         void format(const CharString& encryption_iv);
         const FSMasterBlock& get_master_block() const;
-        either<unsigned int, FileSystemError> write(const File& file);
-        either<File, FileSystemError> read(const CharString& filename);
-        either<unsigned int, FileSystemError> remove(const CharString& filename);
-        vector<CharString> list_files();
+        either<FileId, FileSystemError> write(const File& file);
+        either<File, FileSystemError> read(const FileId& fileId);
+        either<CharString, FileSystemError> get_filename(const FileId& fileId);
+        either<unsigned int, FileSystemError> remove(const FileId& fileId);
+        vector<FileId> list_files();
 };

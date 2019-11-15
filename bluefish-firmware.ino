@@ -8,22 +8,21 @@
 
 #include "api.h"
 #include "binary_api.h"
-#include "text_api.h"
 
 std::unique_ptr<API> _api;
 
 void setup()
 {
-    pinMode(1, OUTPUT);
     pinMode(2, OUTPUT);
+    pinMode(3, OUTPUT);
     Wire.begin();
 
-    digitalWrite(1, HIGH);
+    digitalWrite(2, HIGH);
     Serial.begin(115200);
     while (!Serial) {}
 
     _api = std::make_unique<BinaryAPI>();
-    digitalWrite(1, LOW);
+    digitalWrite(2, LOW);
 }
 
 void loop()

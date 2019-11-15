@@ -7,6 +7,7 @@
 
 #include "char_string.h"
 #include "file.h"
+#include "identifiers.h"
 #include "inode.h"
 #include "stream.h"
 #include "size.h"
@@ -54,7 +55,7 @@ void FileSystem::format(const CharString& encryption_iv)
 void FileSystem::write_master_block()
 {
     _ostream.seekg(0);
-    _ostream << FSMasterINode(_master_block);
+    _ostream << FSMasterINode(0u, 0u, false, _master_block);
 }
 
 void FileSystem::sync_usage_record()
@@ -65,7 +66,7 @@ void FileSystem::sync_usage_record()
     _master_block = std::move(inode.data);
 }
 
-either<unsigned int, FileSystemError> FileSystem::write(const File& file)
+either<FileId, FileSystemError> FileSystem::write(const File& file)
 {
     auto file_size = size(file);
 
@@ -74,6 +75,7 @@ either<unsigned int, FileSystemError> FileSystem::write(const File& file)
 
     auto to_write = write_file_to_string(file);
     auto inode_address = request_free_inode();
+    auto fileId = FileId(address_to_inode(inode_address));
 
     auto max_size = ::size(to_write);
     for (auto i = 0u; i < max_size;)
@@ -91,7 +93,7 @@ either<unsigned int, FileSystemError> FileSystem::write(const File& file)
     }
 
     write_master_block();
-    return file_size;
+    return fileId;
 }
 
 CharString FileSystem::write_file_to_string(const File& file) const
@@ -127,11 +129,19 @@ void FileSystem::write_inode(
         _master_block.file_headers++;
 }
 
-either<File, FileSystemError> FileSystem::read(const CharString& filename)
+either<File, FileSystemError> FileSystem::read(const FileId& fileId)
 {
-    auto address_result = get_address_of_file(filename);
-    return address_result
-        .mapFirst([this] (auto&& a) { return this->read_address_to_file(a); });
+    auto address = inode_to_address(fileId.value);
+    auto header = read_inode_header(address);
+    if (!header.flags.is_file_header)
+        return FileSystemError::FileNotFound;
+    return read_address_to_file(address);
+}
+
+either<CharString, FileSystemError> FileSystem::get_filename(const FileId& fileId)
+{
+    return read(fileId)
+        .mapFirst([] (const auto& file) { return file.name; });
 }
 
 File FileSystem::read_address_to_file(unsigned int address)
@@ -174,70 +184,47 @@ INode<void> FileSystem::read_inode_header(unsigned int address)
     return data;
 }
 
-either<unsigned int, FileSystemError> FileSystem::remove(const CharString& filename)
+either<unsigned int, FileSystemError> FileSystem::remove(const FileId& fileId)
 {
-    return get_address_of_file(filename)
-        .mapFirst([&] (auto&& address)
-        {
-            auto data = read_inode_header(address);
-            auto next_address = data.next;
-            free_inode(address);
+    auto header = read_inode_header(inode_to_address(fileId.value));
+    if (!header.flags.is_file_header)
+        return FileSystemError::FileNotFound;
 
-            while (next_address != 0)
-            {
-                data = read_inode_header(next_address);
-                free_inode(next_address);
-                next_address = data.next;
-            }
+    auto address = inode_to_address(fileId.value);
+    auto next_address = header.next;
+    free_inode(address);
 
-            write_master_block();
+    while (next_address != 0)
+    {
+        header = read_inode_header(next_address);
+        free_inode(next_address);
+        next_address = header.next;
+    }
 
-            return address;
-        });
+    write_master_block();
+
+    return address;
 }
 
-vector<CharString> FileSystem::list_files()
+vector<FileId> FileSystem::list_files()
 {
     auto file_count = static_cast<unsigned int>(count_files());
-    auto filenames = vector<CharString>(file_count);
+    auto filenames = vector<FileId>(file_count);
     auto file_address = 0u;
     for (auto i = 0u; i < file_count; i++)
     {
         get_next_file_header(file_address)
             .match(
-                [&](auto address) -> void
+                [&](const auto& fileId) -> void
                 {
-                    filenames.push_back(this->get_filename_at_address(address));
-                    file_address = address + INODE_SIZE;
+                    filenames.push_back(fileId);
+                    file_address = inode_to_address(fileId.value) + INODE_SIZE;
                 },
                 [](auto&&) -> void {}
             );
     }
 
     return filenames;
-}
-
-either<unsigned int, FileSystemError> FileSystem::get_address_of_file(const CharString& filename, unsigned int start_address)
-{
-    return get_next_file_header(start_address)
-        .match([&] (auto address) -> either<unsigned int, FileSystemError> {
-            if (filename == this->get_filename_at_address(address))
-                return address;
-            return this->get_address_of_file(filename, address + INODE_SIZE);
-        },
-        [] (auto error) -> either<unsigned int, FileSystemError> { return error; });
-}
-
-CharString FileSystem::get_filename_at_address(unsigned int address)
-{
-    auto inode_header = INode<void>();
-    unsigned int charstring_length = 0u;
-    auto filename = CharString();
-
-    _istream.seekg(address);
-    _istream >> inode_header >> charstring_length >> filename;
-
-    return filename;
 }
 
 unsigned int FileSystem::request_free_inode()
@@ -271,7 +258,7 @@ void FileSystem::free_inode(unsigned int address)
         _master_block.file_headers--;
 }
 
-either<unsigned int, FileSystemError> FileSystem::get_next_file_header(unsigned int starting_address)
+either<FileId, FileSystemError> FileSystem::get_next_file_header(unsigned int starting_address)
 {
     if (_master_block.file_headers == 0u)
         return FileSystemError::FileNotFound;
@@ -282,7 +269,7 @@ either<unsigned int, FileSystemError> FileSystem::get_next_file_header(unsigned 
         auto address = inode_to_address(index);
         auto header = read_inode_header(address);
         if (header.flags.is_file_header)
-            return address;
+            return FileId(index);
     }
 
     return FileSystemError::FileNotFound;

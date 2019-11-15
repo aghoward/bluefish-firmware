@@ -2,6 +2,7 @@
 
 #include <utility.h>
 
+#include "identifiers.h"
 #include "stream.h"
 
 CommandStatus BinaryAPI::convert_error(FileSystemError error) const
@@ -13,9 +14,14 @@ CommandStatus BinaryAPI::convert_error(FileSystemError error) const
     return CommandStatus::Fail;
 }
 
-Command BinaryAPI::read_command()
+void BinaryAPI::notify_ready()
 {
     _output.put(static_cast<byte>(CommandStatus::Ready));
+}
+
+Command BinaryAPI::read_command()
+{
+    notify_ready();
     auto command = static_cast<byte>(_input.get());
     return static_cast<Command>(command);
 }
@@ -38,13 +44,27 @@ void BinaryAPI::write_file()
 
 void BinaryAPI::read_file()
 {
-    CharString filename;
-    _input >> filename;
-    _fs->read(filename)
+    FileId id;
+    _input >> id;
+    _fs->read(id)
         .match(
             [&](auto&& file) {
                 _output.put(static_cast<byte>(CommandStatus::OK));
                 _output << file;
+            },
+            [&](auto&& error) { _output.put(static_cast<byte>(convert_error(error))); }
+        );
+}
+
+void BinaryAPI::get_filename()
+{
+    FileId id;
+    _input >> id;
+    _fs->get_filename(id)
+        .match(
+            [&] (auto&& filename) {
+                _output.put(static_cast<byte>(CommandStatus::OK));
+                _output << filename;
             },
             [&](auto&& error) { _output.put(static_cast<byte>(convert_error(error))); }
         );
@@ -58,17 +78,17 @@ void BinaryAPI::get_master_block()
 
 void BinaryAPI::list_files()
 {
-    auto filenames = _fs->list_files();
-    _output.put(static_cast<byte>(filenames.size()));
-    for (auto& filename : filenames)
-        _output << filename; 
+    auto fileIds = _fs->list_files();
+    _output.put(static_cast<byte>(fileIds.size()));
+    for (auto& id : fileIds)
+        _output << id;
 }
 
 void BinaryAPI::remove_file()
 {
-    CharString filename;
-    _input >> filename;
-    _fs->remove(filename)
+    FileId fileId;
+    _input >> fileId;
+    _fs->remove(fileId)
         .match(
             [&](auto&&) { _output.put(static_cast<byte>(CommandStatus::OK)); },
             [&](auto&& error) { _output.put(static_cast<byte>(convert_error(error))); }

@@ -10,7 +10,8 @@ enum class Command : byte
     GetMasterBlock,
     ListFiles,
     RemoveFile,
-    Format
+    Format,
+    GetFileName
 };
         
 class API
@@ -19,6 +20,7 @@ class API
         virtual void unknown_command() = 0;
         virtual void write_file() = 0;
         virtual void read_file() = 0;
+        virtual void get_filename() = 0;
         virtual void get_master_block() = 0;
         virtual void list_files() = 0;
         virtual void remove_file() = 0;
@@ -29,5 +31,6 @@ class API
         
         void process_command(Command cmd);
         virtual Command read_command() = 0;
+        virtual void notify_ready() = 0;
 };
 
