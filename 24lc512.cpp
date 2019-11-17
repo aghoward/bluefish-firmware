@@ -12,7 +12,7 @@ void EEPROM_16kb::write(unsigned short address, const char* data, unsigned long 
         auto remaining_bytes = size - i;
         auto bytes_to_write = (remaining_bytes > max_write_size) ? max_write_size : remaining_bytes;
         if (((page_address + bytes_to_write) % page_size) < bytes_to_write)
-            bytes_to_write = page_size - page_address;
+            bytes_to_write = page_size - (page_address % page_size);
         write_page(page_address, data + i, bytes_to_write);
         i += bytes_to_write;
     }
