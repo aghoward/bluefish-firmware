@@ -64,7 +64,7 @@ class FileSystem
         size_t count_free_space();
         size_t count_files();
 
-        void format(const CharString& encryption_iv);
+        void format(const CharString& encryption_iv, const CharString& challenge);
         const FSMasterBlock& get_master_block() const;
         either<FileId, FileSystemError> write(const File& file);
         either<File, FileSystemError> read(const FileId& fileId);

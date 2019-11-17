@@ -40,13 +40,13 @@ const FSMasterBlock& FileSystem::get_master_block() const
     return _master_block;
 }
 
-void FileSystem::format(const CharString& encryption_iv)
+void FileSystem::format(const CharString& encryption_iv, const CharString& challenge)
 {
     auto total_inodes = _eeprom->size / INODE_SIZE;
     for (auto index = 1u; index < total_inodes; index++)
         free_inode(inode_to_address(index));
 
-    _master_block = FSMasterBlock(total_inodes - 1u, 0u, encryption_iv);
+    _master_block = FSMasterBlock(total_inodes - 1u, 0u, encryption_iv, challenge);
     write_master_block();
     delay(50);
     sync_usage_record();
@@ -55,7 +55,7 @@ void FileSystem::format(const CharString& encryption_iv)
 void FileSystem::write_master_block()
 {
     _ostream.seekg(0);
-    _ostream << FSMasterINode(0u, 0u, false, _master_block);
+    _ostream << FSMasterINode(0u, false, _master_block);
 }
 
 void FileSystem::sync_usage_record()
@@ -119,7 +119,6 @@ void FileSystem::write_inode(
 
     auto inode_to_write = INode<CharString>(
         next_address,
-        bytes_to_write,
         is_file_header,
         std::move(data_to_write));
 
@@ -230,7 +229,7 @@ vector<FileId> FileSystem::list_files()
 unsigned int FileSystem::request_free_inode()
 {
     auto inode_count = _eeprom->size / INODE_SIZE;
-    for (auto index = 0u; index < inode_count; index++)
+    for (auto index = 1u; index < inode_count; index++)
     {
         auto address = inode_to_address(index);
         auto inode = read_inode_header(address);

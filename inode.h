@@ -26,30 +26,27 @@ template <typename T>
 struct INode
 {
     uint16_t next;
-    uint16_t length;
     Flags flags;
     T data;
 
-    INode(uint16_t n, uint16_t l, bool is_file_header, T&& d)
+    INode(uint16_t n, bool is_file_header, T&& d)
         :
         next(n),
-        length(l),
         flags(1u, is_file_header ? 1u : 0u),
         data(std::move(d)) {}
 
-    INode(uint16_t n, uint16_t l, bool is_file_header, const T& d)
+    INode(uint16_t n, bool is_file_header, const T& d)
         :
         next(n),
-        length(l),
         flags(1u, is_file_header ? 1u : 0u),
         data(d) {}
 
     INode()
-        : INode(0u, 0u, false, {}) {}
+        : INode(0u, false, {}) {}
 
     uint16_t size() const
     {
-        return sizeof(next) + sizeof(length) + sizeof(flags) + ::size(data);
+        return sizeof(next) + sizeof(flags) + ::size(data);
     }
 };
 
@@ -57,14 +54,13 @@ template <>
 struct INode<void>
 {
     uint16_t next;
-    uint16_t length;
     Flags flags;
 
-    INode() : next(0u), length(0u), flags() {}
+    INode() : next(0u), flags() {}
 
     uint16_t size() const
     {
-        return sizeof(next) + sizeof(length) + sizeof(flags);
+        return sizeof(next) + sizeof(flags);
     }
 };
 
@@ -73,14 +69,14 @@ static constexpr uint16_t usable_inode_space = INODE_SIZE - sizeof(INode<void>);
 template <typename T>
 ostream& operator<<(ostream& stream, const INode<T>& inode)
 {
-    stream << inode.next << inode.length << inode.flags << inode.data;
+    stream << inode.next << inode.flags << inode.data;
     return stream;
 }
 
 template <typename T>
 istream& operator>>(istream& stream, INode<T>& inode)
 {
-    stream >> inode.next >> inode.length >> inode.flags >> inode.data;
+    stream >> inode.next >> inode.flags >> inode.data;
     return stream;
 }
 

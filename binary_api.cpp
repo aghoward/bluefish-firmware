@@ -97,8 +97,8 @@ void BinaryAPI::remove_file()
 
 void BinaryAPI::format()
 {
-    CharString encryption_iv;
-    _input >> encryption_iv;
-    _fs->format(std::move(encryption_iv));
+    CharString encryption_iv, challenge;
+    _input >> encryption_iv >> challenge;
+    _fs->format(std::move(encryption_iv), std::move(challenge));
     _output.put(static_cast<byte>(CommandStatus::OK));
 }

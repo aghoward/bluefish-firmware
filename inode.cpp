@@ -5,12 +5,12 @@
 
 ostream& operator<<(ostream& stream, const INode<void>& inode)
 {
-    return stream << inode.next << inode.length << inode.flags;
+    return stream << inode.next << inode.flags;
 }
 
 istream& operator>>(istream& stream, INode<void>& inode)
 {
-    return stream >> inode.next >> inode.length >> inode.flags;
+    return stream >> inode.next >> inode.flags;
 }
 
 ostream& operator<<(ostream& stream, const Flags& flags)
