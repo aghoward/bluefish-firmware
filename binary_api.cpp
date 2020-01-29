@@ -44,9 +44,9 @@ void BinaryAPI::write_file()
 
 void BinaryAPI::read_file()
 {
-    FileId id;
-    _input >> id;
-    _fs->read(id)
+    CharString filename;
+    _input >> filename;
+    _fs->read(filename)
         .match(
             [&](auto&& file) {
                 _output.put(static_cast<byte>(CommandStatus::OK));
