@@ -137,6 +137,40 @@ either<File, FileSystemError> FileSystem::read(const FileId& fileId)
     return read_address_to_file(address);
 }
 
+either<File, FileSystemError> FileSystem::read(const CharString& filename)
+{
+    return get_fileid_by_filename(filename)
+        .foldFirst([&] (auto&& file_id) { return read(file_id); });
+}
+
+either<FileId, FileSystemError> FileSystem::get_fileid_by_filename(const CharString& filename)
+{
+    auto file_count = static_cast<unsigned int>(count_files());
+    auto file_address = 0u;
+    auto file_id = FileId(0u);
+
+    for (auto i = 0u; i < file_count && file_id.value == 0u; i++)
+    {
+        get_next_file_header(file_address)
+            .matchFirst(
+                [&](const auto& current_file_id) -> void
+                {
+                    get_filename(current_file_id)
+                        .matchFirst(
+                            [&] (const auto& current_filename) -> void
+                            {
+                                if (current_filename == filename) { file_id = current_file_id; }
+                            });
+                    file_address = inode_to_address(current_file_id.value) + INODE_SIZE;
+                });
+    }
+
+    if (file_id.value == 0u)
+        return FileSystemError::FileNotFound;
+    return file_id;
+}
+
+
 either<CharString, FileSystemError> FileSystem::get_filename(const FileId& fileId)
 {
     return read(fileId)
@@ -213,14 +247,12 @@ vector<FileId> FileSystem::list_files()
     for (auto i = 0u; i < file_count; i++)
     {
         get_next_file_header(file_address)
-            .match(
+            .matchFirst(
                 [&](const auto& fileId) -> void
                 {
                     filenames.push_back(fileId);
                     file_address = inode_to_address(fileId.value) + INODE_SIZE;
-                },
-                [](auto&&) -> void {}
-            );
+                });
     }
 
     return filenames;

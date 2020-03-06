@@ -35,6 +35,7 @@ class FileSystem
         void free_inode(unsigned int address);
 
         either<FileId, FileSystemError> get_next_file_header(unsigned int starting_address);
+        either<FileId, FileSystemError> get_fileid_by_filename(const CharString& filename);
 
         File read_address_to_file(unsigned int address);
         CharString read_file_to_string(unsigned int address);
@@ -67,6 +68,7 @@ class FileSystem
         void format(const CharString& encryption_iv, const CharString& challenge);
         const FSMasterBlock& get_master_block() const;
         either<FileId, FileSystemError> write(const File& file);
+        either<File, FileSystemError> read(const CharString& filename);
         either<File, FileSystemError> read(const FileId& fileId);
         either<CharString, FileSystemError> get_filename(const FileId& fileId);
         either<unsigned int, FileSystemError> remove(const FileId& fileId);
