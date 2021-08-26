@@ -152,17 +152,19 @@ either<FileId, FileSystemError> FileSystem::get_fileid_by_filename(const CharStr
     for (auto i = 0u; i < file_count && file_id.value == 0u; i++)
     {
         get_next_file_header(file_address)
-            .matchFirst(
+            .match(
                 [&](const auto& current_file_id) -> void
                 {
                     get_filename(current_file_id)
-                        .matchFirst(
+                        .match(
                             [&] (const auto& current_filename) -> void
                             {
                                 if (current_filename == filename) { file_id = current_file_id; }
-                            });
+                            },
+                            [] (const auto&) { });
                     file_address = inode_to_address(current_file_id.value) + INODE_SIZE;
-                });
+                },
+                [] (const auto&) { });
     }
 
     if (file_id.value == 0u)
@@ -247,12 +249,13 @@ vector<FileId> FileSystem::list_files()
     for (auto i = 0u; i < file_count; i++)
     {
         get_next_file_header(file_address)
-            .matchFirst(
+            .match(
                 [&](const auto& fileId) -> void
                 {
                     filenames.push_back(fileId);
                     file_address = inode_to_address(fileId.value) + INODE_SIZE;
-                });
+                },
+                [] (const auto&) { });
     }
 
     return filenames;
