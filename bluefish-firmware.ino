@@ -16,6 +16,7 @@ void setup()
     pinMode(2, OUTPUT);
     pinMode(3, OUTPUT);
     Wire.begin();
+    Wire.setClock(400000);
 
     digitalWrite(2, HIGH);
     Serial.begin(115200);
