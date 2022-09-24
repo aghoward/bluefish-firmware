@@ -1,9 +1,9 @@
 #include "binary_api.h"
 
-#include <utility.h>
-
 #include "identifiers.h"
 #include "stream.h"
+
+#include <utility.h>
 
 CommandStatus BinaryAPI::convert_error(FileSystemError error) const
 {
